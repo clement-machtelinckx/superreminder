@@ -47,6 +47,7 @@ if (isset($userData)) {
     </div>
     <a href="list_vue.php">voir vos liste.</a>
     <a href="deconnexion.php">deconnexion</a>
+    <a href="testAPI.php">test API</a>
     
 
 </body>
