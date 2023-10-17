@@ -91,8 +91,29 @@ class Liste {
 
     }
 
-    public function readNote(){
-
+    public function readNote($id_list){
+        $servername = "localhost";
+        $username = "root";
+        $password = "Clement2203$";
+        $dbname = "superreminder";
+    
+        try {
+            $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // echo "Connexion réussie<br>";
+        } catch (PDOException $e) {
+            echo "Erreur de connexion : " . $e->getMessage();
+        }
+                // Récupérez les expériences pour ce CV
+        $sql = "SELECT * FROM note WHERE id_list = :id_list";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id_list', $id_list, PDO::PARAM_STR);
+        $stmt->execute();
+        $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'notes' => $notes
+        ];
     }
 
     public function getListDetails($id_list) {
