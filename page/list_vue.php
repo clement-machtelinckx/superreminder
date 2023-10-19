@@ -7,6 +7,7 @@ include "../class/Liste.php";
 $user = new User(); // Créez une instance de la classe User
 
 var_dump($_SESSION["username"]);
+var_dump($_SESSION['id']);
 if (isset($_SESSION['username'])) {
     $email = $_SESSION['username'];
     $session_id = $_SESSION["id"];
@@ -25,7 +26,7 @@ if (isset($_SESSION["id_list"]) && !empty($_SESSION["id_list"])) {
 
     // Maintenant, vous pouvez accéder aux expériences, formations et loisirs
     $notes = $listDetails['notes']; // Utilisez la clé 'notes' pour accéder aux données
-    var_dump($notes);
+
 }
 ?>
 
@@ -46,65 +47,67 @@ if (isset($_SESSION["id_list"]) && !empty($_SESSION["id_list"])) {
         <input type="submit" value="enter">
     </form>
 
-    <div id="form">
-        <form name="list_selector" id="list_selector" method="get" action="../module/module_selectList.php">
-        <label for="select_list">Sélectionnez une liste : </label>
-        <select id="select_list" name="select_list">
-        <?php
-
-        $listOfList = $user->getList_list($session_id);
-
-        foreach ($listOfList as $list) {
-            echo '<option value="' . $list['id'] . '">' . $list['list_name'] . '</option>';
-        }
-        ?>
-        </select>
-        <input type="submit" name="load_list" value="Charger la list sélectionné">
-        </form>
-
-        <?php echo "list charger : " . $_SESSION["id_list"] ?>
-    </div>
-    <?php var_dump($listOfList); ?>
-    <form method="post" action="../module/module_addNote.php">
-        <input type="date" id="date_end" name="date_end">
-        <label for="note_content">ajouter une note </label>
-        <input type="text" id="note_content" name="note_content">
-        <input type="submit" value="enter">
-
-    </form>
-
-    <h1>list</h1>
 
 
-        <div id="data-container"></div>
+    <h1>List</h1>
+
+<div id="data-container"></div>
 
 <script>
-    fetch('../module/module_selectList.php')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('La requête a échoué. Statut : ' + response.status);
-            }
-            return response.json(); // Analysez la réponse JSON
-        })
-        .then(data => {
-            console.log(data); // Affichez les données dans la console
+fetch('../module/json_list.php')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('La requête a échoué. Statut : ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const container = document.getElementById('data-container');
+        data.lists.forEach(list => {
+            const listElement = document.createElement('div');
+            listElement.textContent = `list name: ${list.list_name}`;
+            const loadNotesButton = document.createElement('button');
+            loadNotesButton.textContent = 'Charger les notes';
 
-            // Récupérer la référence de la div container
-            const container = document.getElementById('data-container');
+            // Ajoutez une classe unique basée sur l'ID de la liste
+            listElement.classList.add(`list-${list.id}`);
 
-            // Parcourir les données et créer les éléments HTML
-            data.notes.forEach(note => {
-                const noteElement = document.createElement('div');
-                noteElement.textContent = `ID: ${note.id}, ID Liste: ${note.id_list}, Date: ${note.date_end}, Contenu: ${note.note_content}`;
+            loadNotesButton.addEventListener('click', () => {
+                fetch(`../module/json_note.php?list_id=${list.id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('La requête a échoué. Statut : ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(notesData => {
+                        // Récupérez la div correspondante en utilisant la classe unique
+                        const listDiv = document.querySelector(`.list-${list.id}`);
 
-                // Ajouter l'élément à la div container
-                container.appendChild(noteElement);
-            });
-        })
-        .catch(error => {
-            console.error('Erreur :', error);
+                        // Créez un élément de paragraphe pour afficher les données JSON
+                        const notesParagraph = document.createElement('p');
+                        notesData.notes.forEach(note => {
+                        notesParagraph.textContent += `Date de fin: ${note.date_end}, Contenu: ${note.note_content}\n`;
         });
+
+
+                        // Ajoutez le paragraphe à la div de la liste
+                        listDiv.appendChild(notesParagraph);
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des notes :', error);
+                    });
+            });
+
+            container.appendChild(listElement);
+            container.appendChild(loadNotesButton);
+        });
+    })
+    .catch(error => {
+        console.error('Erreur :', error);
+    });
 </script>
+
 </body>
 
 <?php
