@@ -88,7 +88,9 @@ fetch('../module/json_list.php')
                         const notesParagraph = document.createElement('p');
                         notesData.notes.forEach(note => {
                         notesParagraph.textContent += `Date de fin: ${note.date_end}, Contenu: ${note.note_content}\n`;
-        });
+
+                        
+                     });
 
 
                         // Ajoutez le paragraphe à la div de la liste
